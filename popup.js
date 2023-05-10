@@ -46,18 +46,25 @@ function generateEmail(subject) {
   // const message = `Dear [Name], I am writing to request a leave of absence tomorrow for my sister's wedding. I understand that this may be short notice, but I would really appreciate it if you could grant me this leave. Thank you for your understanding. Sincerely, [Your Name]`;
   // replaceBodyContent(message);
 
-  fetch("https://api.openai.com/v1/completions", {
+  fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "text-davinci-003",
-      prompt: `
-        Write an email about: ${subject}.
-        Please give me just the message body and nothing else.
-      `,
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an email helper assistant. You help me in drafting emails.",
+        },
+        {
+          role: "user",
+          content: subject,
+        },
+      ],
       max_tokens: 1024,
       temperature: 0.5,
     }),
@@ -66,10 +73,10 @@ function generateEmail(subject) {
       return response.json();
     })
     .then(function (data) {
-      const message = data.choices[0].text;
+      const message = data.choices[0].message.content;
       replaceBodyContent(message);
     })
-    .finally(function() {
+    .finally(function () {
       var generateBtn = document.getElementById("generate-btn");
       generateBtn.classList.remove("loading");
     });
